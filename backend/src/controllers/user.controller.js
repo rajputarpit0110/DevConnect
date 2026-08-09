@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { apiError as apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { uploadOnCloudinary } from "../utils/fileupload.js";
 
 
 
@@ -275,13 +276,145 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 
 
+const updateAvatar = asyncHandler(async (req, res) => {
+
+    const avatarLocalPath = req?.file?.path;
+
+    if (!avatarLocalPath) {
+        throw new apiError(400, "Avatar file is required")
+    }
+
+    const currentUser = await User.findById(req.user._id)
+
+    if (!currentUser) {
+        throw new apiError(404, "User not found")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    if (!avatar) {
+        throw new apiError(500, "Failed to upload avatar")
+    }
+
+    if (currentUser.avatarPublicId) {
+        await deleteFromCloudinary(currentUser.avatarPublicId)
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                avatar: avatar.secure_url,
+                avatarPublicId: avatar.public_id
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password -refreshToken")
+
+    if (!user) {
+        throw new apiError(404, "User not found")
+    }
+
+    return res
+        .status(200)
+        .json(new apiResponse(200,"Avatar updated successfully",user))
+})
+
+
+const updateCoverImage = asyncHandler(async (req, res) => {
+
+  const localFilePath = req?.file?.path
+
+  if (!localFilePath) {
+    throw new apiError(400, "Cover image is required")
+  }
+
+  const currentUser = await User.findById(req.user._id)
+
+  if (!currentUser) {
+    throw new apiError(404, "User not found")
+  }
+
+  const coverImage = await uploadOnCloudinary(localFilePath)
+
+  if (!coverImage) {
+    throw new apiError(500, "Failed to upload cover image")
+  }
+
+  if (currentUser.coverImagePublicId) {
+    await deleteFromCloudinary(currentUser.coverImagePublicId)
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        coverImage: coverImage.secure_url,
+        coverImagePublicId: coverImage.public_id
+      }
+    },
+    {
+      new: true,
+      runValidators: true
+    }
+  ).select("-password -refreshToken")
+
+  if (!user) {
+    throw new apiError(404, "User not found")
+  }
+
+  return res
+    .status(200)
+    .json(new apiResponse(200,"Cover image updated successfully",user))
+})
+
+
+const getUserProfile = asyncHandler(async (req, res) => {
+
+  const { username } = req.params
+  // console.log(username)
+
+  if(!username){
+    throw new apiError(400, "Username is required")
+  }
+
+  const user = await User.findOne(
+    {
+      username : username.trim().toLowerCase()
+    }
+  ).select("-password -refreshToken")
+
+  if(!user){
+    throw new apiError(404,"User not found")
+  }
+
+  res
+  .status(200)
+  .json(new apiResponse(200,"Profile fetched successfully",user))
+
+})
+
+
+
+const followUser = asyncHandler( async (req, res) => {
+    
+  
+  
+  return res.status(200)
+})
+
 
 export {
   registerUser,
   loginUser,
   getCurrentUser,
   logoutUser,
-  updateProfile
-
+  updateProfile,
+  updateAvatar,
+  updateCoverImage,
+  getUserProfile,
+  followUser
 
 };
