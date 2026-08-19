@@ -23,3 +23,7 @@ app.listen(port, ()=>{
 import userRouter from './src/routes/user.route.js'
 
 app.use("/api/v1/users", userRouter)
+
+import followRouter from './src/routes/follow.route.js'
+
+app.use("/api/v1/follow", followRouter)

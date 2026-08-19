@@ -1,0 +1,13 @@
+------User 1-------
+name      : Arpit
+username  : arpit@123
+email     : arpit@123
+password  : arpit@123
+
+
+
+------User 2-------
+name      : Rahul
+username  : rahul@123
+email     : rahul@123
+password  : rahul@123    

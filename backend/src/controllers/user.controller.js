@@ -398,12 +398,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
 
 
-const followUser = asyncHandler( async (req, res) => {
-    
-  
-  
-  return res.status(200)
-})
+
 
 
 export {
@@ -415,6 +410,5 @@ export {
   updateAvatar,
   updateCoverImage,
   getUserProfile,
-  followUser
 
 };
